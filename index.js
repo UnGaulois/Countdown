@@ -1,4 +1,39 @@
-// Route affichage numérique type "digital clock"
+// Serveur Node.js générant un compte à rebours PNG stylé "digital"
+const express = require("express");
+const PImage = require("pureimage");
+const { WritableStreamBuffer } = require("stream-buffers");
+
+const app = express();
+const PORT = process.env.PORT || 3000;
+
+// =======================================================
+// Charger la police numérique ShareTechMono
+// =======================================================
+let fontReady = false;
+
+const digitalFont = PImage.registerFont(
+  "./fonts/ShareTechMono-Regular.ttf",
+  "ShareTechMono"
+);
+
+digitalFont.load(() => {
+  fontReady = true;
+  console.log("🔢 Police numérique ShareTechMono chargée !");
+});
+
+// =======================================================
+// Date limite (fuseau Québec)
+// =======================================================
+const DEADLINE = new Date("2025-12-15T23:59:00-05:00");
+
+// Route accueil
+app.get("/", (req, res) => {
+  res.send("✨ Service Countdown en ligne. Image sur /countdown.png");
+});
+
+// =======================================================
+// Route PNG — style digital
+// =======================================================
 app.get("/countdown.png", async (req, res) => {
   if (!fontReady) {
     return res.status(503).send("⏳ Police non prête — réessaye dans une seconde.");
@@ -11,14 +46,16 @@ app.get("/countdown.png", async (req, res) => {
   const seconds = Math.floor(diff / 1000) % 60;
   const minutes = Math.floor(diff / (1000 * 60)) % 60;
   const hours   = Math.floor(diff / (1000 * 60 * 60)) % 24;
-  const days    = Math.floor(diff / (1000 * 60 * 60 * 24));
 
-  // Format digital style : HH:MM:SS
-  const timeStr = `${String(hours).padStart(2, "0")}:${String(minutes).padStart(2, "0")}:${String(seconds).padStart(2, "0")}`;
+  // Format digital HH:MM:SS
+  const timeStr =
+    `${String(hours).padStart(2, "0")}:` +
+    `${String(minutes).padStart(2, "0")}:` +
+    `${String(seconds).padStart(2, "0")}`;
 
   // Taille finale de l'image
-  const width = 400;
-  const height = 150;
+  const width = 500;
+  const height = 200;
 
   const img = PImage.make(width, height);
   const ctx = img.getContext("2d");
@@ -29,15 +66,15 @@ app.get("/countdown.png", async (req, res) => {
 
   // Rectangle arrondi blanc
   ctx.fillStyle = "white";
-  roundRect(ctx, 20, 20, width - 40, height - 40, 25);
+  roundRect(ctx, 40, 40, width - 80, height - 80, 30);
   ctx.fill();
 
   // Texte numérique rouge
-  ctx.fillStyle = "#ff2a2a";        // rouge digital
-  ctx.font = "48pt ShareTechMono";  // Police digitale
+  ctx.fillStyle = "#ff2a2a";          // Rouge digital
+  ctx.font = "72pt ShareTechMono";    // Police digitale
   ctx.textAlign = "center";
 
-  ctx.fillText(timeStr, width / 2, height / 2 + 20);
+  ctx.fillText(timeStr, width / 2, height / 2 + 25);
 
   // Conversion PNG
   const buffer = new WritableStreamBuffer();
@@ -49,8 +86,9 @@ app.get("/countdown.png", async (req, res) => {
   res.end(buffer.getContents());
 });
 
-
-// Utilitaire pour dessiner un rectangle arrondi
+// =======================================================
+// Fonction de rectangle arrondi
+// =======================================================
 function roundRect(ctx, x, y, w, h, r) {
   ctx.beginPath();
   ctx.moveTo(x + r, y);
@@ -64,3 +102,10 @@ function roundRect(ctx, x, y, w, h, r) {
   ctx.quadraticCurveTo(x, y, x + r, y);
   ctx.closePath();
 }
+
+// =======================================================
+// Démarrer le serveur
+// =======================================================
+app.listen(PORT, () => {
+  console.log(`🚀 Serveur countdown en marche sur port ${PORT}`);
+});
