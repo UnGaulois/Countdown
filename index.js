@@ -1,7 +1,17 @@
-// Serveur Node.js générant un compte à rebours PNG sans police externe
+// Serveur Node.js générant un compte à rebours PNG
 const express = require("express");
 const PImage = require("pureimage");
 const { WritableStreamBuffer } = require("stream-buffers");
+
+// ⚠️ Charger la police OpenSans (INDISPENSABLE pour PureImage)
+const font = PImage.registerFont(
+  "./fonts/OpenSans_SemiCondensed-Regular.ttf", // chemin vers ton fichier
+  "OpenSans"                                    // nom utilisé dans ctx.font
+);
+
+font.load(() => {
+  console.log("📘 Police OpenSans chargée !");
+});
 
 const app = express();
 const PORT = process.env.PORT || 3000;
@@ -10,7 +20,7 @@ const PORT = process.env.PORT || 3000;
 const DEADLINE = new Date("2025-12-15T23:59:00-05:00");
 
 
-// Route d’accueil (optionnelle mais utile)
+// Route d’accueil
 app.get("/", (req, res) => {
   res.send("✨ Service Countdown en ligne. Utilise /countdown.png pour voir l’image.");
 });
@@ -20,7 +30,7 @@ app.get("/", (req, res) => {
 app.get("/countdown.png", async (req, res) => {
   const now = new Date();
   let diff = DEADLINE - now;
-  if (diff < 0) diff = 0; // Évite les valeurs négatives
+  if (diff < 0) diff = 0;
 
   // Calcul du temps restant
   const seconds = Math.floor(diff / 1000) % 60;
@@ -38,11 +48,11 @@ app.get("/countdown.png", async (req, res) => {
 
   // Titre
   ctx.fillStyle = "white";
-  ctx.font = "28pt sans-serif";
+  ctx.font = "28pt OpenSans";
   ctx.fillText("Temps restant :", 100, 40);
 
   // Données du compte à rebours
-  ctx.font = "bold 24pt sans-serif";
+  ctx.font = "bold 24pt OpenSans";
   ctx.fillText(`${days}j ${hours}h ${minutes}m ${seconds}s`, 100, 90);
 
   // Conversion en PNG
