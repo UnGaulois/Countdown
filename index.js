@@ -60,6 +60,7 @@ app.get("/countdown.png", async (req, res) => {
   ctx.fillText("Temps restant :", 100, 40);
 
   // Données du compte à rebours
+  ctx.fillStyle = "white";
   ctx.font = "bold 24pt OpenSans";
   ctx.fillText(`${days}j ${hours}h ${minutes}m ${seconds}s`, 100, 90);
 
