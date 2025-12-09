@@ -1,42 +1,7 @@
-// Serveur Node.js générant un compte à rebours PNG
-const express = require("express");
-const PImage = require("pureimage");
-const { WritableStreamBuffer } = require("stream-buffers");
-
-const app = express();
-const PORT = process.env.PORT || 3000;
-
-// ===============================================
-// Charger la police OpenSans AVANT toute génération
-// ===============================================
-let fontReady = false;
-
-const font = PImage.registerFont(
-  "./fonts/OpenSans_SemiCondensed-Regular.ttf", // chemin EXACT à ta police
-  "OpenSans"                                    // nom utilisé dans ctx.font
-);
-
-font.load(() => {
-  fontReady = true;
-  console.log("📘 Police OpenSans chargée !");
-});
-
-// Date limite
-const DEADLINE = new Date("2025-12-15T23:59:00-05:00");
-
-
-// Route d’accueil
-app.get("/", (req, res) => {
-  res.send("✨ Service Countdown en ligne. Utilise /countdown.png pour voir l’image.");
-});
-
-
-// Route PNG
+// Route affichage numérique type "digital clock"
 app.get("/countdown.png", async (req, res) => {
-
-  // 🚦 Assurer que la police est chargée AVANT de dessiner
   if (!fontReady) {
-    return res.status(503).send("⏳ Police non prête — réessaye dans 1 seconde…");
+    return res.status(503).send("⏳ Police non prête — réessaye dans une seconde.");
   }
 
   const now = new Date();
@@ -48,21 +13,31 @@ app.get("/countdown.png", async (req, res) => {
   const hours   = Math.floor(diff / (1000 * 60 * 60)) % 24;
   const days    = Math.floor(diff / (1000 * 60 * 60 * 24));
 
-  const img = PImage.make(400, 120);
+  // Format digital style : HH:MM:SS
+  const timeStr = `${String(hours).padStart(2, "0")}:${String(minutes).padStart(2, "0")}:${String(seconds).padStart(2, "0")}`;
+
+  // Taille finale de l'image
+  const width = 400;
+  const height = 150;
+
+  const img = PImage.make(width, height);
   const ctx = img.getContext("2d");
 
-  ctx.fillStyle = "black";
-  ctx.fillRect(0, 0, 400, 120);
+  // Fond global transparent (ou noir selon besoins)
+  ctx.fillStyle = "transparent";
+  ctx.fillRect(0, 0, width, height);
 
-  // Titre
+  // Rectangle arrondi blanc
   ctx.fillStyle = "white";
-  ctx.font = "28pt OpenSans";
-  ctx.fillText("Temps restant :", 100, 40);
+  roundRect(ctx, 20, 20, width - 40, height - 40, 25);
+  ctx.fill();
 
-  // Données du compte à rebours
-  ctx.fillStyle = "white";
-  ctx.font = "bold 24pt OpenSans";
-  ctx.fillText(`${days}j ${hours}h ${minutes}m ${seconds}s`, 100, 90);
+  // Texte numérique rouge
+  ctx.fillStyle = "#ff2a2a";        // rouge digital
+  ctx.font = "48pt ShareTechMono";  // Police digitale
+  ctx.textAlign = "center";
+
+  ctx.fillText(timeStr, width / 2, height / 2 + 20);
 
   // Conversion PNG
   const buffer = new WritableStreamBuffer();
@@ -75,7 +50,17 @@ app.get("/countdown.png", async (req, res) => {
 });
 
 
-// Lancer le serveur
-app.listen(PORT, () => {
-  console.log(`🚀 Serveur countdown en marche sur port ${PORT}`);
-});
+// Utilitaire pour dessiner un rectangle arrondi
+function roundRect(ctx, x, y, w, h, r) {
+  ctx.beginPath();
+  ctx.moveTo(x + r, y);
+  ctx.lineTo(x + w - r, y);
+  ctx.quadraticCurveTo(x + w, y, x + w, y + r);
+  ctx.lineTo(x + w, y + h - r);
+  ctx.quadraticCurveTo(x + w, y + h, x + w - r, y + h);
+  ctx.lineTo(x + r, y + h);
+  ctx.quadraticCurveTo(x, y + h, x, y + h - r);
+  ctx.lineTo(x, y + r);
+  ctx.quadraticCurveTo(x, y, x + r, y);
+  ctx.closePath();
+}
