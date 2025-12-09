@@ -32,7 +32,7 @@ app.get("/", (req, res) => {
 });
 
 // =======================================================
-// Route PNG — style digital
+// Route PNG — style digital sur fond blanc
 // =======================================================
 app.get("/countdown.png", async (req, res) => {
   if (!fontReady) {
@@ -49,34 +49,33 @@ app.get("/countdown.png", async (req, res) => {
   const minutes = Math.floor(diff / (1000 * 60)) % 60;
   const seconds = Math.floor(diff / 1000) % 60;
 
-  // Format digital DD:HH:MM:SS
+  // Format digital : DD:HH:MM:SS
   const timeStr =
     `${String(days).padStart(2, "0")}:` +
     `${String(hours).padStart(2, "0")}:` +
     `${String(minutes).padStart(2, "0")}:` +
     `${String(seconds).padStart(2, "0")}`;
 
-  // Dimensions de l'image
+  // Taille finale
   const width = 500;
   const height = 200;
 
   const img = PImage.make(width, height);
   const ctx = img.getContext("2d");
 
-  // Fond complètement transparent
-  ctx.fillStyle = "rgba(0,0,0,0)";
+  // Fond blanc
+  ctx.fillStyle = "white";
   ctx.fillRect(0, 0, width, height);
 
-  // Rectangle arrondi blanc
-  ctx.fillStyle = "white";
+  // Rectangle arrondi gris clair
+  ctx.fillStyle = "#f0f0f0"; 
   roundRect(ctx, 40, 40, width - 80, height - 80, 30);
   ctx.fill();
 
   // Texte numérique rouge
-  ctx.fillStyle = "#ff2a2a";          // Rouge digital
-  ctx.font = "72pt ShareTechMono";    // Police numérique
+  ctx.fillStyle = "#ff2a2a";
+  ctx.font = "72pt ShareTechMono";
   ctx.textAlign = "center";
-
   ctx.fillText(timeStr, width / 2, height / 2 + 25);
 
   // Conversion PNG
@@ -84,13 +83,13 @@ app.get("/countdown.png", async (req, res) => {
   await PImage.encodePNGToStream(img, buffer);
 
   res.setHeader("Content-Type", "image/png");
-  res.setHeader("Cache-Control", "no-store"); // empêche le cache
+  res.setHeader("Cache-Control", "no-store"); // pour s'assurer du rafraîchissement
 
   res.end(buffer.getContents());
 });
 
 // =======================================================
-// Fonction de rectangle arrondi
+// Fonction rectangle arrondi
 // =======================================================
 function roundRect(ctx, x, y, w, h, r) {
   ctx.beginPath();
