@@ -43,25 +43,27 @@ app.get("/countdown.png", async (req, res) => {
   let diff = DEADLINE - now;
   if (diff < 0) diff = 0;
 
-  const seconds = Math.floor(diff / 1000) % 60;
-  const minutes = Math.floor(diff / (1000 * 60)) % 60;
+  // Calcul du temps restant
+  const days    = Math.floor(diff / (1000 * 60 * 60 * 24));
   const hours   = Math.floor(diff / (1000 * 60 * 60)) % 24;
+  const minutes = Math.floor(diff / (1000 * 60)) % 60;
+  const seconds = Math.floor(diff / 1000) % 60;
 
-  // Format digital HH:MM:SS
+  // Format digital DD:HH:MM:SS
   const timeStr =
     `${String(days).padStart(2, "0")}:` +
     `${String(hours).padStart(2, "0")}:` +
     `${String(minutes).padStart(2, "0")}:` +
     `${String(seconds).padStart(2, "0")}`;
 
-  // Taille finale de l'image
+  // Dimensions de l'image
   const width = 500;
   const height = 200;
 
   const img = PImage.make(width, height);
   const ctx = img.getContext("2d");
 
-  // Fond global transparent (ou noir selon besoins)
+  // Fond complètement transparent
   ctx.fillStyle = "rgba(0,0,0,0)";
   ctx.fillRect(0, 0, width, height);
 
@@ -72,7 +74,7 @@ app.get("/countdown.png", async (req, res) => {
 
   // Texte numérique rouge
   ctx.fillStyle = "#ff2a2a";          // Rouge digital
-  ctx.font = "72pt ShareTechMono";    // Police digitale
+  ctx.font = "72pt ShareTechMono";    // Police numérique
   ctx.textAlign = "center";
 
   ctx.fillText(timeStr, width / 2, height / 2 + 25);
@@ -82,7 +84,7 @@ app.get("/countdown.png", async (req, res) => {
   await PImage.encodePNGToStream(img, buffer);
 
   res.setHeader("Content-Type", "image/png");
-  res.setHeader("Cache-Control", "no-cache, no-store, must-revalidate");
+  res.setHeader("Cache-Control", "no-store"); // empêche le cache
 
   res.end(buffer.getContents());
 });
