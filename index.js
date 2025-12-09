@@ -1,4 +1,4 @@
-// Serveur Node.js avec pureimage pour générer un compte à rebours PNG
+// Serveur Node.js avec PureImage pour générer un compte à rebours PNG sans font externe
 const express = require("express");
 const PImage = require("pureimage");
 const { WritableStreamBuffer } = require("stream-buffers");
@@ -24,25 +24,23 @@ app.get("/countdown.png", async (req, res) => {
   ctx.fillStyle = "black";
   ctx.fillRect(0, 0, 400, 120);
 
-  // Texte blanc
+  // Texte blanc sans police externe
   ctx.fillStyle = "white";
-  ctx.font = PImage.registerFont("./arial.ttf", "Arial");
-  await ctx.font.load();
-  ctx.font = "28pt Arial";
+  ctx.font = "28pt sans-serif";
   ctx.fillText("Temps restant :", 100, 40);
 
-  ctx.font = "bold 24pt Arial";
+  ctx.font = "bold 24pt sans-serif";
   ctx.fillText(`${days}j ${hours}h ${minutes}m ${seconds}s`, 100, 90);
 
-  // Convertir l'image en buffer PNG
+  // Convertir en PNG et envoyer au client
   const buffer = new WritableStreamBuffer();
-  PImage.encodePNGToStream(img, buffer).then(() => {
-    res.setHeader("Content-Type", "image/png");
-    res.setHeader("Cache-Control", "no-cache, no-store, must-revalidate");
-    res.setHeader("Pragma", "no-cache");
-    res.setHeader("Expires", "0");
-    res.end(buffer.getContents());
-  });
+  await PImage.encodePNGToStream(img, buffer);
+
+  res.setHeader("Content-Type", "image/png");
+  res.setHeader("Cache-Control", "no-cache, no-store, must-revalidate");
+  res.setHeader("Pragma", "no-cache");
+  res.setHeader("Expires", "0");
+  res.end(buffer.getContents());
 });
 
 app.listen(PORT, () => {
