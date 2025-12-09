@@ -67,11 +67,6 @@ app.get("/countdown.png", async (req, res) => {
   ctx.fillStyle = "white";
   ctx.fillRect(0, 0, width, height);
 
-  // Rectangle arrondi gris clair
-  ctx.fillStyle = "#f0f0f0"; 
-  roundRect(ctx, 40, 40, width - 80, height - 80, 30);
-  ctx.fill();
-
   // Texte numérique rouge
   ctx.fillStyle = "#ff2a2a";
   ctx.font = "72pt ShareTechMono";
