@@ -61,7 +61,7 @@ app.get("/countdown.png", async (req, res) => {
   const ctx = img.getContext("2d");
 
   // Fond global transparent (ou noir selon besoins)
-  ctx.fillStyle = "transparent";
+  ctx.fillStyle = "rgba(0,0,0,0)";
   ctx.fillRect(0, 0, width, height);
 
   // Rectangle arrondi blanc
